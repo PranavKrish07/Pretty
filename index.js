@@ -14,30 +14,43 @@ function teleportNoButton() {
     // Get the content box position
     const content = document.querySelector('.content');
     const contentRect = content.getBoundingClientRect();
+    const buttonWidth = noBtn.offsetWidth;
+    const buttonHeight = noBtn.offsetHeight;
     
-    // Define a smaller teleport range around the content box (50-150px away)
-    const minDistance = 50;
-    const maxDistance = 150;
+    // Adjust distance range based on device
+    const minDistance = isMobile ? 40 : 50;
+    const maxDistance = isMobile ? 100 : 150;
     
     let randomX, randomY;
+    let isValidPosition = false;
     let attempts = 0;
     
     // Generate random position within bounded area
-    do {
+    while (!isValidPosition && attempts < 10) {
         const angle = Math.random() * Math.PI * 2;
         const distance = minDistance + Math.random() * (maxDistance - minDistance);
         
         randomX = contentRect.left + contentRect.width / 2 + Math.cos(angle) * distance;
         randomY = contentRect.top + contentRect.height / 2 + Math.sin(angle) * distance;
         
-        // Ensure button stays within viewport
-        randomX = Math.max(10, Math.min(randomX, window.innerWidth - noBtn.offsetWidth - 10));
-        randomY = Math.max(10, Math.min(randomY, window.innerHeight - noBtn.offsetHeight - 10));
+        // Strict boundary checking for mobile
+        const padding = 5;
+        const minX = padding;
+        const maxX = window.innerWidth - buttonWidth - padding;
+        const minY = padding;
+        const maxY = window.innerHeight - buttonHeight - padding;
+        
+        // Clamp to valid range
+        randomX = Math.max(minX, Math.min(randomX, maxX));
+        randomY = Math.max(minY, Math.min(randomY, maxY));
+        
+        // Verify position is valid
+        if (randomX >= minX && randomX <= maxX && randomY >= minY && randomY <= maxY) {
+            isValidPosition = true;
+        }
         
         attempts++;
-    } while (attempts < 5 && 
-             randomX < 0 || randomX + noBtn.offsetWidth > window.innerWidth ||
-             randomY < 0 || randomY + noBtn.offsetHeight > window.innerHeight);
+    }
     
     noBtn.style.position = 'fixed';
     noBtn.style.left = randomX + 'px';
